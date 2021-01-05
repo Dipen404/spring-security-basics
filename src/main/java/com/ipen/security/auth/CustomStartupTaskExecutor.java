@@ -1,7 +1,6 @@
 package com.ipen.security.auth;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,25 +21,36 @@ public class CustomStartupTaskExecutor {
 	private UserService userService;
 	@Autowired
 	private RoleService roleService;
-	
-	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	@Autowired
+	private UserRepository userRepository;
+
 	@PostConstruct
 	public void createDefaultAdmin() throws IOException {
-		System.out.println("Inside create admin");
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-		User admin = new User("admin@gmail.com", passwordEncoder.encode("password"), "ADMIN", "ADMIN");
-		Role role = roleService.findOrCreateRole("ROLE_ADMIN");
-		// Set<UserRole> userRoles = Set.of(new UserRole(user, role));
-		Set<UserRole> userRole = new HashSet<UserRole>();
-		userRole.add(new UserRole(admin, role));
-		userService.createUser(admin, userRole);
-		
-		User user = new User("user@gmail.com", passwordEncoder.encode("password"), "USER", "USER");
-		Role roles = roleService.findOrCreateRole("ROLE_USER");
-		// Set<UserRole> userRoles = Set.of(new UserRole(user, role));
-		Set<UserRole> userRoles = new HashSet<UserRole>();
-		userRoles.add(new UserRole(admin, roles));
-		userService.createUser(user, userRoles);
-
+		User userAdmin = userRepository.findByEmail("admin@gmail.com");
+		if (userAdmin == null) {
+			System.out.println("Inside default  admin user creation");
+			User admin = new User("admin@gmail.com", passwordEncoder.encode("password"), "ADMIN", "ADMIN");
+			Role role = roleService.findOrCreateRole("ROLE_ADMIN");
+			Set<UserRole> userRole = new HashSet<UserRole>();
+			userRole.add(new UserRole(admin, role));
+			userService.createUser(admin, userRole);
+			System.out.println("Default user of admin type is created");
 		}
+
+		User userUser = userRepository.findByEmail("user@gmail.com");
+
+		if (userUser == null) {
+
+			System.out.println("Inside default  user type user creation");
+			User user = new User("user@gmail.com", passwordEncoder.encode("password"), "USER", "USER");
+			Role roles = roleService.findOrCreateRole("ROLE_USER");
+			Set<UserRole> userRoles = new HashSet<UserRole>();
+			userRoles.add(new UserRole(user, roles));
+			userService.createUser(user, userRoles);
+			System.out.println("Default user of user type is created");
+		}
+
 	}
+}
