@@ -23,6 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private UserDetailsService userDetailsService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private AuthenticationSuccessHandler successHandler;
 
 
     @Override
@@ -39,6 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
+                .successHandler(successHandler)
+                .loginPage("/login").permitAll()
                 .and()
                 .csrf().disable();
     }
